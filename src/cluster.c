@@ -5148,9 +5148,9 @@ clusterNode *getNodeByQuery(client *c, struct redisCommand *cmd, robj **argv, in
                 }
             } else {
                 /* If it is not the first key, make sure it is exactly
-                 * the same key as the first we saw. */
+                 * in the same cluster node as the first we saw. */
                 if (!equalStringObjects(firstkey,thiskey)) {
-                    if (slot != thisslot) {
+		     if (server.cluster->slots[thisslot] != myself) {
                         /* Error: multiple keys from different slots. */
                         getKeysFreeResult(keyindex);
                         if (error_code)

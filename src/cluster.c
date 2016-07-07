@@ -2963,13 +2963,14 @@ void clusterHandleSlaveMigration(int max_slaves) {
     /* Step 1: Don't migrate if the cluster state is not ok. */
     if (server.cluster->state != CLUSTER_OK) return;
 
-    /* Step 2: Don't migrate if my master will not be left with at least
-     *         'migration-barrier' slaves after my migration. */
+    /* Step 2: Don't migrate if migration is disabled by settings or
+     * my master will become orphaned after my migration. */
     if (mymaster == NULL) return;
+    if (server.cluster_migration_barrier == 0) return;
     for (j = 0; j < mymaster->numslaves; j++)
         if (!nodeFailed(mymaster->slaves[j]) &&
             !nodeTimedOut(mymaster->slaves[j])) okslaves++;
-    if (okslaves <= server.cluster_migration_barrier) return;
+    if (okslaves <= 1) return;
 
     /* Step 3: Idenitfy a candidate for migration, and check if among the
      * masters with the greatest number of ok slaves, I'm the one with the
